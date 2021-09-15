@@ -211,12 +211,7 @@ func (db *IndexerDb) AddBlock(block *bookkeeping.Block) error {
 				RewardsPool: block.RewardsPool,
 			}
 			ledgerForEval, err := ledger_for_evaluator.MakeLedgerForEvaluator(
-				tx, block.GenesisHash(), specialAddresses)
-			if err != nil {
-				return fmt.Errorf("AddBlock() err: %w", err)
-			}
-
-			err = ledgerForEval.PreloadAccounts(ledger.GetBlockAddresses(block))
+				tx, specialAddresses)
 			if err != nil {
 				return fmt.Errorf("AddBlock() err: %w", err)
 			}
