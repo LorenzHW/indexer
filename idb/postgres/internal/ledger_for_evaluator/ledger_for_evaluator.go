@@ -44,19 +44,21 @@ var statements = map[string]string{
 // LedgerForEvaluator implements the indexerLedgerForEval interface from
 // go-algorand ledger/eval.go and is used for accounting.
 type LedgerForEvaluator struct {
-	tx          pgx.Tx
+	tx pgx.Tx
 	// Indexer currently does not store the balances of special account, but
 	// go-algorand's eval checks that they satisfy the minimum balance. We thus return
 	// a fake amount.
 	// TODO: remove.
 	specialAddresses transactions.SpecialAddresses
+	latestRound      basics.Round
 }
 
 // MakeLedgerForEvaluator creates a LedgerForEvaluator object.
-func MakeLedgerForEvaluator(tx pgx.Tx, specialAddresses transactions.SpecialAddresses) (LedgerForEvaluator, error) {
+func MakeLedgerForEvaluator(tx pgx.Tx, specialAddresses transactions.SpecialAddresses, latestRound basics.Round) (LedgerForEvaluator, error) {
 	l := LedgerForEvaluator{
 		tx:               tx,
 		specialAddresses: specialAddresses,
+		latestRound:      latestRound,
 	}
 
 	for name, query := range statements {
@@ -77,9 +79,9 @@ func (l *LedgerForEvaluator) Close() {
 	}
 }
 
-// BlockHdr is part of go-algorand's indexerLedgerForEval interface.
-func (l LedgerForEvaluator) BlockHdr(round basics.Round) (bookkeeping.BlockHeader, error) {
-	row := l.tx.QueryRow(context.Background(), blockHeaderStmtName, uint64(round))
+// LatestBlockHdr is part of go-algorand's indexerLedgerForEval interface.
+func (l LedgerForEvaluator) LatestBlockHdr() (bookkeeping.BlockHeader, error) {
+	row := l.tx.QueryRow(context.Background(), blockHeaderStmtName, uint64(l.latestRound))
 
 	var header []byte
 	err := row.Scan(&header)
@@ -385,7 +387,7 @@ func (l LedgerForEvaluator) LookupWithoutRewards(addresses map[basics.Address]st
 	return res, nil
 }
 
-func (l* LedgerForEvaluator) parseAddress(row pgx.Row) (basics.Address, bool /*exists*/, error) {
+func (l *LedgerForEvaluator) parseAddress(row pgx.Row) (basics.Address, bool /*exists*/, error) {
 	var buf []byte
 	err := row.Scan(&buf)
 	if err == pgx.ErrNoRows {

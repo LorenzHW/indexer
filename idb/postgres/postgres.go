@@ -211,7 +211,7 @@ func (db *IndexerDb) AddBlock(block *bookkeeping.Block) error {
 				RewardsPool: block.RewardsPool,
 			}
 			ledgerForEval, err := ledger_for_evaluator.MakeLedgerForEvaluator(
-				tx, specialAddresses)
+				tx, specialAddresses, block.Round()-1)
 			if err != nil {
 				return fmt.Errorf("AddBlock() err: %w", err)
 			}
@@ -224,7 +224,7 @@ func (db *IndexerDb) AddBlock(block *bookkeeping.Block) error {
 			proto.EnableAssetCloseAmount = true
 
 			start := time.Now()
-			delta, modifiedTxns, err := ledger.Eval(ledgerForEval, block, proto)
+			delta, modifiedTxns, err := ledger.EvalForIndexer(ledgerForEval, block, proto)
 			if err != nil {
 				return fmt.Errorf("AddBlock() eval err: %w", err)
 			}
