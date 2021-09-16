@@ -423,8 +423,8 @@ func startIndexer(logfile string, loglevel string, indexerBinary string, algodNe
 
 	var stdout bytes.Buffer
 	var stderr bytes.Buffer
-	cmd.Stdout = &stdout
-	cmd.Stderr = &stderr
+	cmd.Stdout = os.Stdout
+	cmd.Stderr = os.Stderr
 
 	if err := cmd.Start(); err != nil {
 		return nil, fmt.Errorf("failure calling Start(): %w", err)

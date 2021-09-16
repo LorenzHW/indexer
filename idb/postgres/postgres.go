@@ -228,6 +228,7 @@ func (db *IndexerDb) AddBlock(block *bookkeeping.Block) error {
 			if err != nil {
 				return fmt.Errorf("AddBlock() eval err: %w", err)
 			}
+			fmt.Println("eval time", time.Since(start).Seconds())
 			metrics.PostgresEvalTimeSeconds.Observe(time.Since(start).Seconds())
 			ledgerForEval.Close()
 

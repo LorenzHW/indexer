@@ -3,6 +3,7 @@ package ledgerforevaluator
 import (
 	"context"
 	"fmt"
+	"time"
 
 	"github.com/algorand/go-algorand/data/basics"
 	"github.com/algorand/go-algorand/data/bookkeeping"
@@ -359,6 +360,8 @@ func (l *LedgerForEvaluator) loadCreatables(accountDataMap *map[basics.Address]*
 
 // LookupWithoutRewards is part of go-algorand's indexerLedgerForEval interface.
 func (l LedgerForEvaluator) LookupWithoutRewards(addresses map[basics.Address]struct{}) (map[basics.Address]*basics.AccountData, error) {
+	fmt.Println("accounts", len(addresses))
+	start := time.Now()
 	res, err := l.loadAccountTable(addresses)
 	if err != nil {
 		return nil, fmt.Errorf("loadAccounts() err: %w", err)
@@ -383,6 +386,7 @@ func (l LedgerForEvaluator) LookupWithoutRewards(addresses map[basics.Address]st
 		}
 	}
 
+	fmt.Println("accounts done", time.Since(start))
 	return res, nil
 }
 
@@ -404,6 +408,8 @@ func (l *LedgerForEvaluator) parseAddress(row pgx.Row) (basics.Address, bool /*e
 
 // GetAssetCreator is part of go-algorand's indexerLedgerForEval interface.
 func (l LedgerForEvaluator) GetAssetCreator(indices map[basics.AssetIndex]struct{}) (map[basics.AssetIndex]ledger.FoundAddress, error) {
+	fmt.Println("assets", len(indices))
+	start := time.Now()
 	indicesArr := make([]basics.AssetIndex, 0, len(indices))
 	for index := range indices {
 		indicesArr = append(indicesArr, index)
@@ -428,6 +434,7 @@ func (l LedgerForEvaluator) GetAssetCreator(indices map[basics.AssetIndex]struct
 	}
 	results.Close()
 
+	fmt.Println("assets done", time.Since(start))
 	return res, nil
 }
 
